@@ -15,7 +15,20 @@ puts $client.cluster.health
 es_index = 'join_queries_example'
 $client.indices.delete(index: es_index) rescue puts("No index yet")
 
-$search_strings = 20.times.map { Faker::Hipster.word }
+#$search_strings = 20.times.map { Faker::Hipster.sentence }
+
+$search_strings = [
+  "Fixie everyday 90's tacos disrupt vhs twee.",
+  "Drinking vinyl quinoa microdosing 3 wolf moon.",
+  "Distillery irony kickstarter polaroid bespoke twee.",
+  "Distillery cardigan organic seitan selvage fanny pack chia.",
+  "Paleo etsy bicycle rights shoreditch fanny pack next level readymade pbr&b.",
+  "Heirloom fixie vinegar chambray.",
+  "Pork belly letterpress tousled loko waistcoat.",
+  "Farm-to-table venmo vegan wes anderson park.",
+  "Bushwick neutra pork belly readymade asymmetrical quinoa austin post-ironic.",
+  "Messenger bag letterpress pabst before they sold out lomo gluten-free cardigan wes anderson."
+]
 
 res = $client.indices.create(
   index: es_index,
@@ -111,10 +124,9 @@ res = $client.indices.create(
   }
 )
 
-binding.pry
 
 def generate
-  (1..20).to_a.map do |i|
+  (1..40).to_a.map do |i|
     {
       id: SecureRandom.uuid,
       title: $search_strings.sample
@@ -163,7 +175,6 @@ type_1_objs.each do |i|
   strings =
     i[:children].map { |i_2| [i_2[:title]].concat(i_2[:children].map { |i_3| i_3[:title] }) }.flatten.uniq
   strings << i[:title]
-  binding.pry
   $client.update(
     index: es_index,
     type: 'type_1',
@@ -175,76 +186,3 @@ type_1_objs.each do |i|
 end
 puts 'done.'
 
-puts 'possible terms:'
-puts $search_strings.join(' ')
-
-terms = 10.times.map { $search_strings.sample }
-puts 'without join queries'
-terms.each do |term|
-  res = $client.search(
-    index: es_index,
-    type: 'type_1',
-    body: {
-      query: {
-        bool: {
-          should: {
-            match_phrase_prefix: {
-              search_strings: term
-            }
-          }
-        }
-      }
-    }
-  )
-  puts "term: #{term}; took: #{res['took']}; finded: #{res['hits']['total']}"
-end
-
-puts 'with join queries'
-terms.each do |term|
-  res = $client.search(
-    index: es_index,
-    type: 'type_1',
-    body: {
-      query: {
-        bool: {
-          should: [
-            {
-              match_phrase_prefix: {
-                title: term
-              }
-            },
-            has_child: {
-              type: 'type_2',
-              query: {
-                bool: {
-                  should: [
-                    {
-                      match_phrase_prefix: {
-                        title: term
-                      }
-                    },
-                    has_child: {
-                      type: 'type_3',
-                      query: {
-                        bool: {
-                          should: [
-                            {
-                              match_phrase_prefix: {
-                                title: term
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
-  )
-  puts "term: #{term}; took: #{res['took']}; finded: #{res['hits']['total']}"
-end
