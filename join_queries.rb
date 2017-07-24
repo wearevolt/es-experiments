@@ -13,7 +13,6 @@ $client = Elasticsearch::Client.new(url: "http://elastic:changeme@127.0.0.1:9200
 puts $client.cluster.health
 
 es_index = 'join_queries_example'
-
 $client.indices.delete(index: es_index) rescue puts("No index yet")
 
 $search_strings = 20.times.map { Faker::Hipster.word }
@@ -112,8 +111,10 @@ res = $client.indices.create(
   }
 )
 
+binding.pry
+
 def generate
-  (1..100).to_a.map do |i|
+  (1..20).to_a.map do |i|
     {
       id: SecureRandom.uuid,
       title: $search_strings.sample
@@ -173,6 +174,9 @@ type_1_objs.each do |i|
   )
 end
 puts 'done.'
+
+puts 'possible terms:'
+puts $search_strings.join(' ')
 
 terms = 10.times.map { $search_strings.sample }
 puts 'without join queries'
