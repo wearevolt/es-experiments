@@ -33,6 +33,7 @@ puts $search_strings
 
 puts 'without join queries'
 $search_strings.each do |term|
+  start = Time.now.to_i
   res = $client.search(
     index: es_index,
     type: 'type_1',
@@ -48,11 +49,14 @@ $search_strings.each do |term|
       }
     }
   )
-  puts "term: #{term}; took: #{res['took']}; finded: #{res['hits']['total']}"
+  finish = Time.now.to_i
+  puts finish - start
+  puts "term: #{term}; took: #{res['took']}; found: #{res['hits']['total']}"
 end
 
 puts 'with join queries'
 $search_strings.each do |term|
+  start = Time.now.to_i
   res = $client.search(
     index: es_index,
     type: 'type_1',
@@ -98,5 +102,7 @@ $search_strings.each do |term|
       }
     }
   )
-  puts "term: #{term}; took: #{res['took']}; finded: #{res['hits']['total']}"
+  finish = Time.now.to_i
+  puts finish - start
+  puts "term: #{term}; took: #{res['took']}; found: #{res['hits']['total']}"
 end
