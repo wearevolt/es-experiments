@@ -16,7 +16,7 @@ es_index = 'join_queries_example'
 
 $client.indices.delete(index: es_index) rescue puts("No index yet")
 
-search_strings = 1000.times.map { Faker::Hipster.sentence }
+$search_strings = 20.times.map { Faker::Hipster.word }
 
 res = $client.indices.create(
   index: es_index,
@@ -116,7 +116,7 @@ def generate
   (1..100).to_a.map do |i|
     {
       id: SecureRandom.uuid,
-      title: search_strings.sample
+      title: $search_strings.sample
     }
   end
 end
@@ -160,8 +160,9 @@ type_1_objs =
 
 type_1_objs.each do |i|
   strings =
-    i[:children].map { |i_2| [i_2[:title]].concat(i_2[:children].map { |i_3| i_3[:title] }) }.flatten
+    i[:children].map { |i_2| [i_2[:title]].concat(i_2[:children].map { |i_3| i_3[:title] }) }.flatten.uniq
   strings << i[:title]
+  binding.pry
   $client.update(
     index: es_index,
     type: 'type_1',
@@ -173,7 +174,7 @@ type_1_objs.each do |i|
 end
 puts 'done.'
 
-terms = 10.times.map { search_strings.sample }
+terms = 10.times.map { $search_strings.sample }
 puts 'without join queries'
 terms.each do |term|
   res = $client.search(
@@ -182,7 +183,7 @@ terms.each do |term|
     body: {
       query: {
         bool: {
-          must: {
+          should: {
             match_phrase_prefix: {
               search_strings: term
             }
