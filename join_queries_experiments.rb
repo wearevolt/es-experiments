@@ -269,19 +269,19 @@ puts 'possible terms:'
 puts $search_strings
 
 generate_documents(1, 10)
-puts 'documents count: 1110'
+puts 'documents count: ~ 1000'
 search
 search
 search
 
-puts 'documents count: 29040'
+puts 'documents count: ~ 30000'
 generate_documents(11, 42)
 search
 search
 search
 
 generate_documents(43, 83)
-puts 'documents count: 100574'
+puts 'documents count: ~ 10000'
 search
 search
 search
